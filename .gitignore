@@ -1,0 +1,11 @@
+Netbeans-config
+.idea
+*~
+nbproject
+.buildpath
+.project
+.settings/
+build
+/vendor
+composer.phar
+phpunit.phar

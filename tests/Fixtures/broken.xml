@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+	<title>rss title</title>
+	<link>https://site.tld/</link>
+	<description><![CDATA[Some RSS description]]></description>
+	<language>en</language>
+	<managingEditor>editor@site.tld</managingEditor>
+	<generator>generator name</generator>
+	<pubDate>Sun, 09 Aug 2015 10:36:23 GMT</pubDate>
+	<lastBuildDate></lastBuildDate>
+    <image>
+        <link>https://site.tld/</link>
+        <url>https://site.tld/i/logo.gif</url>
+        <title>Site title</title>
+    </image>
+    <item>
+		<title><![CDATA[First item]]></title>
+		<guid isPermaLink="true">https://site.tld/link/1/</guid>
+		<link>https://site.tld/link/1/</link>
+		<description><![CDATA[Lorem ipsum description 1]]></description>
+		<pubDate>Sat, 08 Aug 2015 18:06:05 GMT</pubDate>
+		<author>Author1</author>
+		<category><![CDATA[Programming]]></category><category><![CDATA[Item 1]]></category>
+		<category>test</category><category>rss</category><category>client</category>
+	</item>
+
+    <item>
+		<title><![CDATA[Second item]]></title>
+		<guid isPermaLink="true">https://site.tld/link/2/</guid>
+		<link>https://site.tld/link/2/</link>
+		<description><![CDATA[Lorem ipsum description 2]]></description>
+		<pubDate>Sat, 08 Aug 2015 18:00:05 GMT</pubDate>
+		<author>Author2</author>
+		<category><![CDATA[Programming]]></category><category><![CDATA[Item
+	</item>
+</channel>
