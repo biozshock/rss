@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Biozshock\Rss\Parser;
 
@@ -11,11 +13,12 @@ abstract class AbstractXmlParser
     protected function getNodeValueByTagName(\DOMElement $node, string $tagName): ?string
     {
         $results = $node->getElementsByTagName($tagName);
-        for ($i = 0; $i < $results->length; $i++) {
+        for ($i = 0; $i < $results->length; ++$i) {
             $result = $results->item($i);
             if (null === $result || !$result->nodeValue) {
                 continue;
             }
+
             return $result->nodeValue;
         }
 

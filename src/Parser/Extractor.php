@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Biozshock\Rss\Parser;
 
@@ -6,7 +8,6 @@ use Biozshock\Rss\Model\Feed;
 
 class Extractor
 {
-
     /**
      * @var array<AbstractXmlParser>
      */
@@ -15,8 +16,8 @@ class Extractor
     public function extract(string $text, string $link): ?Feed
     {
         $previousValue = libxml_use_internal_errors(true);
-        $document = new \DomDocument();
-        $document->recover=true;
+        $document = new \DOMDocument();
+        $document->recover = true;
         $document->loadXML($text);
         libxml_use_internal_errors($previousValue);
 
@@ -40,21 +41,17 @@ class Extractor
         $this->extractors['atom'] = new Atom();
     }
 
-    /**
-     * @return Rss
-     */
     private function getRssParser(): Rss
     {
         $this->load();
+
         return $this->extractors['rss'];
     }
 
-    /**
-     * @return Atom
-     */
     private function getAtomParser(): Atom
     {
         $this->load();
+
         return $this->extractors['atom'];
     }
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Biozshock\Rss\Adapter\Store;
 
@@ -56,7 +58,7 @@ class PdoStore implements StoreInterface
     {
         $this->init();
         $statement = $this->pdo->prepare('Select * from Feed where source = ?');
-        $statement->execute(array($url));
+        $statement->execute([$url]);
         $cursor = $statement->fetchAll();
 
         if (!$cursor) {
@@ -89,7 +91,7 @@ class PdoStore implements StoreInterface
     {
         $this->init();
         $statement = $this->pdo->prepare('Select * from Record where id = ?');
-        $statement->execute(array($id));
+        $statement->execute([$id]);
         $cursor = $statement->fetchAll();
 
         if (!$cursor) {
@@ -103,7 +105,7 @@ class PdoStore implements StoreInterface
     {
         $this->init();
         $statement = $this->pdo->prepare('Select * from Record where feed_id = ? ORDER BY id DESC LIMIT 1');
-        $statement->execute(array($feedId));
+        $statement->execute([$feedId]);
         $cursor = $statement->fetchAll();
 
         if (!$cursor) {
@@ -148,9 +150,7 @@ class PdoStore implements StoreInterface
         $this->pdo->beginTransaction();
 
         try {
-
             if ($updateFeed) {
-
                 $statement = $this->pdo->prepare('UPDATE Feed SET `link` = ?, `description` = ?, `title` = ?, ' .
                         '`published_date` = ?, `last_fetched` = ?, `last_modified` = ? WHERE id = ?');
 
@@ -163,17 +163,15 @@ class PdoStore implements StoreInterface
                     $this->formatDateTime($feed->getLastModified()),
                     $feed->getId(),
                 ]);
-
             }
 
-            //TODO: collision with same pubdates
+            // TODO: collision with same pubdates
             $lastRecord = $this->loadLastItem($feed->getId());
             $statement = $this->pdo->prepare('insert into Record (`id`, `feed_id`, `title`, `content`, `picture`, ' .
                         '`author`, `link`, `guid`, `publication_date`, `tags`) values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 
             foreach ($feed->getRecords() as $record) {
                 /** @var Record $record */
-
                 if (!$lastRecord || $record->getPublicationDate() > $lastRecord->getPublicationDate()) {
                     $statement->execute([
                         $feed->getId(),
@@ -193,7 +191,6 @@ class PdoStore implements StoreInterface
         } catch (\PDOException $e) {
             $this->pdo->rollBack();
         }
-
     }
 
     protected function init(): PDO

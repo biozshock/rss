@@ -1,10 +1,4 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 12:21 PM
- */
+<?php declare(strict_types=1);
 
 namespace Biozshock\Rss\Adapter\Store;
 
@@ -17,12 +11,15 @@ interface StoreInterface
      * @return array<Feed>
      */
     public function loadFeeds(): array;
+
     public function loadFeed(int $id): ?Feed;
-    
+
     /**
      * @return array<Record>
      */
     public function loadItems(int $feedId): array;
+
     public function loadItem(int $id): ?Record;
+
     public function save(Feed $feed): void;
 }

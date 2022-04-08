@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Biozshock\Rss\Adapter\Fetcher;
 
@@ -26,7 +28,7 @@ class GuzzleAdapter implements FetcherInterface
 
     private function extract(ResponseInterface $response, string $url): ?Feed
     {
-        if ($response->getStatusCode() === 200) {
+        if (200 === $response->getStatusCode()) {
             return $this->extractor->extract((string) $response->getBody(), $url);
         }
 

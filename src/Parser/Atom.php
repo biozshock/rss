@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Biozshock\Rss\Parser;
 
@@ -15,7 +17,7 @@ class Atom extends AbstractXmlParser
 
     private static array $propertiesMapping = [
         'title' => 'setTitle',
-        'id'  => 'setGuid',
+        'id' => 'setGuid',
     ];
 
     public function create(\DOMDocument $document, string $link): ?Feed
@@ -51,7 +53,7 @@ class Atom extends AbstractXmlParser
         $nodeList = $element->getElementsByTagName('link');
         foreach ($nodeList as $nodeResult) {
             /** @var \DomElement $nodeResult */
-            if ($nodeResult->getAttribute('rel') === 'alternate') {
+            if ('alternate' === $nodeResult->getAttribute('rel')) {
                 $feed->setLink($nodeResult->getAttribute('href'));
                 break;
             }
@@ -96,7 +98,7 @@ class Atom extends AbstractXmlParser
         $nodeList = $node->getElementsByTagName('link');
         foreach ($nodeList as $nodeResult) {
             /** @var \DomElement $nodeResult */
-            if ($nodeResult->getAttribute('rel') === 'alternate') {
+            if ('alternate' === $nodeResult->getAttribute('rel')) {
                 $item->setLink($nodeResult->getAttribute('href'));
                 break;
             }
@@ -107,7 +109,7 @@ class Atom extends AbstractXmlParser
     {
         $nodeList = $node->getElementsByTagName('author');
         foreach ($nodeList->item(0)->childNodes as $nodeResult) {
-            if ($nodeResult->nodeName === 'name') {
+            if ('name' === $nodeResult->nodeName) {
                 $item->setAuthor($nodeResult->nodeValue);
                 break;
             }

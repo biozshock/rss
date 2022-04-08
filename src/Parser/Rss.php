@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Biozshock\Rss\Parser;
 
@@ -7,19 +9,19 @@ use Biozshock\Rss\Model\Record;
 
 class Rss extends AbstractXmlParser
 {
-    private static array $feedPropertiesMapping = array(
+    private static array $feedPropertiesMapping = [
         'title' => 'setTitle',
         'description' => 'setDescription',
         'link' => 'setLink',
-    );
+    ];
 
-    private static array $propertiesMapping = array(
+    private static array $propertiesMapping = [
         'title' => 'setTitle',
-        'guid'  => 'setGuid',
-        'link'  => 'setLink',
+        'guid' => 'setGuid',
+        'link' => 'setLink',
         'description' => 'setContent',
-        'author' => 'setAuthor'
-    );
+        'author' => 'setAuthor',
+    ];
 
     public function create(\DOMDocument $document, string $link): ?Feed
     {
