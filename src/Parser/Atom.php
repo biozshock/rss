@@ -1,29 +1,24 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 1:46 PM
- */
+<?php declare(strict_types=1);
 
 namespace Biozshock\Rss\Parser;
 
 use Biozshock\Rss\Model\Feed;
 use Biozshock\Rss\Model\Record;
+use DateTimeInterface;
 
 class Atom extends AbstractXmlParser
 {
-    private static $feedPropertiesMapping = array(
+    private static array $feedPropertiesMapping = [
         'title' => 'setTitle',
         'subtitle' => 'setDescription',
-    );
+    ];
 
-    private static $propertiesMapping = array(
+    private static array $propertiesMapping = [
         'title' => 'setTitle',
         'id'  => 'setGuid',
-    );
+    ];
 
-    public function create(\DOMDocument $document, $link)
+    public function create(\DOMDocument $document, string $link): ?Feed
     {
         $feed = null;
         $nodes = $document->getElementsByTagName('entry');
@@ -42,7 +37,7 @@ class Atom extends AbstractXmlParser
         return $feed;
     }
 
-    private function extractFeed(\DOMElement $element)
+    private function extractFeed(\DOMElement $element): Feed
     {
         $feed = new Feed();
         foreach (self::$feedPropertiesMapping as $nodeName => $methodName) {
@@ -71,7 +66,7 @@ class Atom extends AbstractXmlParser
         return $feed;
     }
 
-    private function extract(\DOMElement $node)
+    private function extract(\DOMElement $node): Record
     {
         $item = new Record();
 
@@ -88,7 +83,7 @@ class Atom extends AbstractXmlParser
         return $item;
     }
 
-    private function setContent(\DOMElement $node, Record $item)
+    private function setContent(\DOMElement $node, Record $item): void
     {
         $item->setContent(
             $this->getNodeValueByTagName($node, 'content')
@@ -96,7 +91,7 @@ class Atom extends AbstractXmlParser
         );
     }
 
-    private function setLink(\DOMElement $node, Record $item)
+    private function setLink(\DOMElement $node, Record $item): void
     {
         $nodeList = $node->getElementsByTagName('link');
         foreach ($nodeList as $nodeResult) {
@@ -108,7 +103,7 @@ class Atom extends AbstractXmlParser
         }
     }
 
-    private function setAuthor(\DOMElement $node, Record $item)
+    private function setAuthor(\DOMElement $node, Record $item): void
     {
         $nodeList = $node->getElementsByTagName('author');
         foreach ($nodeList->item(0)->childNodes as $nodeResult) {
@@ -119,15 +114,15 @@ class Atom extends AbstractXmlParser
         }
     }
 
-    private function setDate(\DOMElement $node, Record $item)
+    private function setDate(\DOMElement $node, Record $item): void
     {
-        $date = $this->getNodeValueByTagName($node, 'published') ?: $this->getNodeValueByTagName($node, 'updated');
+        $date = $this->getNodeValueByTagName($node, 'published') ?? $this->getNodeValueByTagName($node, 'updated');
         if ($date && strtotime($date)) {
-            $item->setPublicationDate(\DateTime::createFromFormat(\DateTime::ATOM, $date));
+            $item->setPublicationDate(\DateTime::createFromFormat(DateTimeInterface::ATOM, $date));
         }
     }
 
-    private function setTags(\DOMElement $node, Record $item)
+    private function setTags(\DOMElement $node, Record $item): void
     {
         $tags = $node->getElementsByTagName('category');
         foreach ($tags as $tag) {

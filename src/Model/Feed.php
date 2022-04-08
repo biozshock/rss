@@ -1,205 +1,134 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 12:24 PM
- */
+<?php declare(strict_types=1);
 
 namespace Biozshock\Rss\Model;
 
 class Feed
 {
-    /**
-     * @var mixed
-     */
-    private $id;
+    private ?int $id = null;
+
+    private string $source;
+
+    private string $link = '';
+
+    private string $title = '';
+
+    private string $description = '';
+
+    private \DateTime $publishedDate;
+
+    private \DateTime $lastFetched;
+
+    private \DateTime $lastModified;
 
     /**
-     * @var string
+     * @var array<Record>
      */
-    private $source;
+    private array $records = [];
 
-    /**
-     * @var string
-     */
-    private $link;
+    public function __construct()
+    {
+        $this->publishedDate = new \DateTime();
+        $this->lastFetched = new \DateTime();
+        $this->lastModified = new \DateTime();
+    }
 
-    /**
-     * @var string
-     */
-    private $title;
-
-    /**
-     * @var string
-     */
-    private $description;
-
-    /**
-     * @var \DateTime
-     */
-    private $publishedDate;
-
-    /**
-     * @var \DateTime
-     */
-    private $lastFetched;
-
-    /**
-     * @var \DateTime
-     */
-    private $lastModified;
-
-    /**
-     * @var array
-     */
-    private $records;
-
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @param mixed $id
-     */
-    public function setId($id)
+    public function setId(?int $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * @return string
-     */
-    public function getSource()
+    public function getSource(): string
     {
         return $this->source;
     }
 
-    /**
-     * @param string $source
-     */
-    public function setSource($source)
+    public function setSource(string $source): void
     {
         $this->source = $source;
     }
 
-    /**
-     * @return string
-     */
-    public function getLink()
+    public function getLink(): string
     {
         return $this->link;
     }
 
-    /**
-     * @param string $link
-     */
-    public function setLink($link)
+    public function setLink(string $link): void
     {
         $this->link = $link;
     }
 
-    /**
-     * @return string
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * @param string $title
-     */
-    public function setTitle($title)
+    public function setTitle(string $title): void
     {
         $this->title = $title;
     }
 
-    /**
-     * @return string
-     */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
 
-    /**
-     * @param string $description
-     */
-    public function setDescription($description)
+    public function setDescription(string $description): void
     {
         $this->description = $description;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getPublishedDate()
+    public function getPublishedDate(): \DateTime
     {
         return $this->publishedDate;
     }
 
-    /**
-     * @param \DateTime $publishedDate
-     */
-    public function setPublishedDate($publishedDate)
+    public function setPublishedDate(\DateTime $publishedDate): void
     {
         $this->publishedDate = $publishedDate;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getLastFetched()
+    public function getLastFetched(): \DateTime
     {
         return $this->lastFetched;
     }
 
-    /**
-     * @param \DateTime $lastFetched
-     */
-    public function setLastFetched($lastFetched)
+    public function setLastFetched(\DateTime $lastFetched): void
     {
         $this->lastFetched = $lastFetched;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getLastModified()
+    public function getLastModified(): \DateTime
     {
         return $this->lastModified;
     }
 
-    /**
-     * @param \DateTime $lastModified
-     */
-    public function setLastModified($lastModified)
+    public function setLastModified(\DateTime $lastModified): void
     {
         $this->lastModified = $lastModified;
     }
 
     /**
-     * @return array
+     * @return array<Record>
      */
-    public function getRecords()
+    public function getRecords(): array
     {
         return $this->records;
     }
 
     /**
-     * @param array $records
+     * @param array<Record> $records
      */
-    public function setRecords($records)
+    public function setRecords(array $records): void
     {
         $this->records = $records;
     }
 
-    public function addRecord($record)
+    public function addRecord(Record $record): void
     {
         $this->records[] = $record;
     }

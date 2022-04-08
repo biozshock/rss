@@ -4,6 +4,7 @@ Netbeans-config
 nbproject
 .buildpath
 .project
+.phpunit.result.cache
 .settings/
 build
 /vendor

@@ -1,25 +1,24 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 1:56 PM
- */
+<?php declare(strict_types=1);
 
 namespace Biozshock\Rss\Parser;
 
-class AbstractXmlParser
+use Biozshock\Rss\Model\Feed;
+
+abstract class AbstractXmlParser
 {
-    protected function getNodeValueByTagName(\DOMElement $node, $tagName)
+    abstract public function create(\DOMDocument $document, string $link): ?Feed;
+
+    protected function getNodeValueByTagName(\DOMElement $node, string $tagName): ?string
     {
         $results = $node->getElementsByTagName($tagName);
         for ($i = 0; $i < $results->length; $i++) {
             $result = $results->item($i);
-            if (!$result->nodeValue) {
+            if (null === $result || !$result->nodeValue) {
                 continue;
             }
             return $result->nodeValue;
         }
-        return false;
+
+        return null;
     }
 }

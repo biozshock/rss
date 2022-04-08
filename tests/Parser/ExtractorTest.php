@@ -1,47 +1,43 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 2:29 PM
- */
+<?php declare(strict_types=1);
 
-namespace Biozshock\Rss\Test\Parser;
+namespace Biozshock\Rss\Tests\Parser;
 
-class ExtractorTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class ExtractorTest extends TestCase
 {
-    public function testExtractRss()
+    public function testExtractRss(): void
     {
         $document = file_get_contents(__DIR__ . '/../Fixtures/wellformed.xml');
 
         $extractor = new \Biozshock\Rss\Parser\Extractor();
         $result = $extractor->extract($document, 'link');
 
-        static::assertEquals('First item', $result->getRecords()[0]->getTitle());
+        self::assertEquals('First item', $result->getRecords()[0]->getTitle());
     }
 
-    public function testExtractRssBroken()
+    public function testExtractRssBroken(): void
     {
         $document = file_get_contents(__DIR__ . '/../Fixtures/broken.xml');
 
         $extractor = new \Biozshock\Rss\Parser\Extractor();
         $result = $extractor->extract($document, 'link');
 
-        static::assertEquals('First item', $result->getRecords()[0]->getTitle());
-        static::assertEquals('Second item', $result->getRecords()[1]->getTitle());
-        static::assertEquals(['Programming'], $result->getRecords()[1]->getTags());
+        self::assertEquals('First item', $result->getRecords()[0]->getTitle());
+        self::assertEquals('Second item', $result->getRecords()[1]->getTitle());
+        self::assertEquals(['Programming'], $result->getRecords()[1]->getTags());
     }
 
-    public function testExtractAtom()
+    public function testExtractAtom(): void
     {
         $document = file_get_contents(__DIR__ . '/../Fixtures/atom.xml');
 
         $extractor = new \Biozshock\Rss\Parser\Extractor();
         $result = $extractor->extract($document, 'link');
 
-        static::assertEquals('use Perl; Shutting Down Indefinitely', $result->getRecords()[0]->getTitle());
+        self::assertEquals('use Perl; Shutting Down Indefinitely', $result->getRecords()[0]->getTitle());
 
-        static::assertNotEmpty($result->getRecords()[0]->getContent());
-        static::assertNotEmpty($result->getRecords()[1]->getContent());
+        self::assertNotEmpty($result->getRecords()[0]->getContent());
+        self::assertNotEmpty($result->getRecords()[1]->getContent());
     }
 }

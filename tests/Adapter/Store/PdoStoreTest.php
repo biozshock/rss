@@ -1,24 +1,19 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 8:05 PM
- */
+<?php declare(strict_types=1);
 
-namespace Biozshock\Rss\Test\Adapter\Store;
+namespace Biozshock\Rss\Tests\Adapter\Store;
 
 use Biozshock\Rss\Adapter\Store\PdoStore;
 use Biozshock\Rss\Model\Feed;
 use Biozshock\Rss\Model\Record;
+use PHPUnit\Framework\TestCase;
 
-class PdoStoreTest extends \PHPUnit_Framework_TestCase
+class PdoStoreTest extends TestCase
 {
-    private $dsn = 'sqlite:/tmp/mydb.sq3';
+    private string $dsn = 'sqlite:/tmp/mydb.sq3';
 
-    public function testSaveFeeds()
+    public function testSaveFeeds(): Feed
     {
-        $store = new PdoStore($this->dsn, null, null);
+        $store = new PdoStore($this->dsn, '', '');
         $date1 = new \DateTime('2015-01-01 00:00:00');
         $date2 = new \DateTime('-1 day');
 
@@ -48,12 +43,11 @@ class PdoStoreTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param Feed $feed
      * @depends testSaveFeeds
      */
-    public function testSaveSameFeed(Feed $feed)
+    public function testSaveSameFeed(Feed $feed): void
     {
-        $store = new PdoStore($this->dsn, null, null);
+        $store = new PdoStore($this->dsn, '', '');
 
         // we should search for feed
         $feed->setId(null);
@@ -70,7 +64,7 @@ class PdoStoreTest extends \PHPUnit_Framework_TestCase
         static::assertEquals($record->getTitle(), $records[2]->getTitle());
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         $sql = file_get_contents(__DIR__ . '/../../Fixtures/data.sql');
         $pdo = new \PDO($this->dsn);

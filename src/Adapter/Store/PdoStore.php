@@ -1,39 +1,32 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 5:36 PM
- */
+<?php declare(strict_types=1);
 
 namespace Biozshock\Rss\Adapter\Store;
 
 use Biozshock\Rss\Model\Feed;
 use Biozshock\Rss\Model\Record;
+use PDO;
 
 class PdoStore implements StoreInterface
 {
-    private $dsn;
-    private $username;
-    private $password;
+    private string $dsn;
+    private string $username;
+    private string $password;
+    private ?PDO $pdo = null;
 
-    /**
-     * @var \PDO
-     */
-    private $pdo;
-
-    public function __construct($dsn, $username, $password)
+    public function __construct(string $dsn, string $username, string $password)
     {
         $this->dsn = $dsn;
         $this->username = $username;
         $this->password = $password;
     }
 
-    public function loadFeeds()
+    /**
+     * @return array<Feed>
+     */
+    public function loadFeeds(): array
     {
         $this->init();
-        $statement = $this->pdo->prepare('Select * from Feed');
-        $statement->execute();
+        $statement = $this->pdo->query('Select * from Feed');
         $cursor = $statement->fetchAll();
 
         $result = [];
@@ -45,11 +38,11 @@ class PdoStore implements StoreInterface
         return $result;
     }
 
-    public function loadFeed($id)
+    public function loadFeed(int $id): ?Feed
     {
         $this->init();
         $statement = $this->pdo->prepare('Select * from Feed where id = ?');
-        $statement->execute(array($id));
+        $statement->execute([$id]);
         $cursor = $statement->fetchAll();
 
         if (!$cursor) {
@@ -59,7 +52,7 @@ class PdoStore implements StoreInterface
         return $this->hydrateFeed($cursor[0]);
     }
 
-    public function loadFeedByUrl($url)
+    public function loadFeedByUrl(string $url): ?Feed
     {
         $this->init();
         $statement = $this->pdo->prepare('Select * from Feed where source = ?');
@@ -73,11 +66,14 @@ class PdoStore implements StoreInterface
         return $this->hydrateFeed($cursor[0]);
     }
 
-    public function loadItems($feedId)
+    /**
+     * @return array<Record>
+     */
+    public function loadItems(int $feedId): array
     {
         $this->init();
         $statement = $this->pdo->prepare('Select * from Record where feed_id = ?');
-        $statement->execute(array($feedId));
+        $statement->execute([$feedId]);
         $cursor = $statement->fetchAll();
 
         $result = [];
@@ -89,7 +85,7 @@ class PdoStore implements StoreInterface
         return $result;
     }
 
-    public function loadItem($id)
+    public function loadItem(int $id): ?Record
     {
         $this->init();
         $statement = $this->pdo->prepare('Select * from Record where id = ?');
@@ -103,7 +99,7 @@ class PdoStore implements StoreInterface
         return $this->hydrateRecord($cursor[0]);
     }
 
-    public function loadLastItem($feedId)
+    public function loadLastItem(int $feedId): ?Record
     {
         $this->init();
         $statement = $this->pdo->prepare('Select * from Record where feed_id = ? ORDER BY id DESC LIMIT 1');
@@ -117,7 +113,7 @@ class PdoStore implements StoreInterface
         return $this->hydrateRecord($cursor[0]);
     }
 
-    public function save(Feed $feed)
+    public function save(Feed $feed): void
     {
         $this->init();
         $updateFeed = true;
@@ -139,7 +135,11 @@ class PdoStore implements StoreInterface
                     $this->formatDateTime($feed->getLastModified()),
                 ]);
 
-                $feed->setId($this->pdo->lastInsertId());
+                if (false === $lastInsertId = $this->pdo->lastInsertId()) {
+                    throw new \RuntimeException('Can not insert row.');
+                }
+
+                $feed->setId((int) $lastInsertId);
             } else {
                 $feed->setId($loadedFeed->getId());
             }
@@ -184,7 +184,7 @@ class PdoStore implements StoreInterface
                         $record->getLink(),
                         $record->getGuid(),
                         $this->formatDateTime($record->getPublicationDate()),
-                        json_encode($record->getTags()),
+                        json_encode($record->getTags(), JSON_THROW_ON_ERROR),
                     ]);
                 }
             }
@@ -196,12 +196,9 @@ class PdoStore implements StoreInterface
 
     }
 
-    /**
-     * @return \PDO
-     */
-    protected function init()
+    protected function init(): PDO
     {
-        if (!$this->pdo) {
+        if (null === $this->pdo) {
             $this->pdo = new \PDO($this->dsn, $this->username, $this->password);
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         }
@@ -209,10 +206,13 @@ class PdoStore implements StoreInterface
         return $this->pdo;
     }
 
-    private function hydrateFeed(array $row)
+    /**
+     * @param array<mixed> $row
+     */
+    private function hydrateFeed(array $row): Feed
     {
         $feed = new Feed();
-        $feed->setId($row['id']);
+        $feed->setId((int) $row['id']);
         $feed->setSource($row['source']);
         $feed->setLink($row['link']);
         $feed->setDescription($row['description']);
@@ -225,10 +225,13 @@ class PdoStore implements StoreInterface
         return $feed;
     }
 
-    private function hydrateRecord(array $row)
+    /**
+     * @param array<mixed> $row
+     */
+    private function hydrateRecord(array $row): Record
     {
         $feed = new Record();
-        $feed->setId($row['id']);
+        $feed->setId((int) $row['id']);
         $feed->setTitle($row['title']);
         $feed->setContent($row['content']);
         $feed->setPicture($row['picture']);
@@ -236,16 +239,12 @@ class PdoStore implements StoreInterface
         $feed->setLink($row['link']);
         $feed->setGuid($row['guid']);
         $feed->setPublicationDate(new \DateTime($row['publication_date']));
-        $feed->setTags(json_decode($row['tags'], true));
+        $feed->setTags(json_decode($row['tags'], true, 512, JSON_THROW_ON_ERROR));
 
         return $feed;
     }
 
-    /**
-     * @param \DateTime $time
-     * @return string
-     */
-    private function formatDateTime(\DateTime $time = null)
+    private function formatDateTime(\DateTime $time = null): ?string
     {
         return $time ? $time->setTimeZone(new \DateTimeZone(date_default_timezone_get()))->format('Y-m-d H:i:s') : null;
     }

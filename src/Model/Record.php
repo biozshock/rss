@@ -1,229 +1,144 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 12:24 PM
- */
+<?php declare(strict_types=1);
 
 namespace Biozshock\Rss\Model;
 
 class Record
 {
-    /**
-     * @var mixed
-     */
-    private $id;
+    private ?int $id = null;
+
+    private Feed $feed;
+
+    private string $title;
+
+    private string $content = '';
+
+    private string $picture = '';
+
+    private \DateTime $publicationDate;
+
+    private string $author = '';
+
+    private string $link = '';
+
+    private string $guid = '';
 
     /**
-     * @var Feed
+     * @var array<string>
      */
-    private $feed;
+    private array $tags = [];
 
-    /**
-     * @var string
-     */
-    private $title;
+    public function __construct()
+    {
+        $this->publicationDate = new \DateTime();
+    }
 
-    /**
-     * @var string
-     */
-    private $content;
-
-    /**
-     * @var string
-     */
-    private $picture;
-
-    /**
-     * @var \DateTime
-     */
-    private $publicationDate;
-
-    /**
-     * @var string
-     */
-    private $author;
-
-    /**
-     * @var string
-     */
-    private $link;
-
-    /**
-     * @var string
-     */
-    private $guid;
-
-    /**
-     * @var array
-     */
-    private $tags;
-
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @param mixed $id
-     */
-    public function setId($id)
+    public function setId(?int $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * @return Feed
-     */
-    public function getFeed()
+    public function getFeed(): Feed
     {
         return $this->feed;
     }
 
-    /**
-     * @param Feed $feed
-     */
-    public function setFeed($feed)
+    public function setFeed(Feed $feed): void
     {
         $this->feed = $feed;
     }
 
-    /**
-     * @return string
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * @param string $title
-     */
-    public function setTitle($title)
+    public function setTitle(string $title): void
     {
         $this->title = $title;
     }
 
-    /**
-     * @return string
-     */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }
 
-    /**
-     * @param string $content
-     */
-    public function setContent($content)
+    public function setContent(string $content): void
     {
         $this->content = $content;
     }
 
-    /**
-     * @return string
-     */
-    public function getPicture()
+    public function getPicture(): string
     {
         return $this->picture;
     }
 
-    /**
-     * @param string $picture
-     */
-    public function setPicture($picture)
+    public function setPicture(string $picture): void
     {
         $this->picture = $picture;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getPublicationDate()
+    public function getPublicationDate(): \DateTime
     {
         return $this->publicationDate;
     }
 
-    /**
-     * @param \DateTime $publicationDate
-     */
-    public function setPublicationDate($publicationDate)
+    public function setPublicationDate(\DateTime $publicationDate): void
     {
         $this->publicationDate = $publicationDate;
     }
 
-    /**
-     * @return string
-     */
-    public function getAuthor()
+    public function getAuthor(): string
     {
         return $this->author;
     }
 
-    /**
-     * @param string $author
-     */
-    public function setAuthor($author)
+    public function setAuthor(string $author): void
     {
         $this->author = $author;
     }
 
-    /**
-     * @return string
-     */
-    public function getLink()
+    public function getLink(): string
     {
         return $this->link;
     }
 
-    /**
-     * @param string $link
-     */
-    public function setLink($link)
+    public function setLink(string $link): void
     {
         $this->link = $link;
     }
 
-    /**
-     * @return string
-     */
-    public function getGuid()
+    public function getGuid(): string
     {
         return $this->guid;
     }
 
-    /**
-     * @param string $guid
-     */
-    public function setGuid($guid)
+    public function setGuid(string $guid): void
     {
         $this->guid = $guid;
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
-    public function getTags()
+    public function getTags(): array
     {
         return $this->tags;
     }
 
     /**
-     * @param array $tags
+     * @param array<string> $tags
      */
-    public function setTags($tags)
+    public function setTags(array $tags): void
     {
         $this->tags = $tags;
     }
 
-    /**
-     * @param string $tag
-     */
-    public function addTag($tag)
+    public function addTag(string $tag): void
     {
         $this->tags[] = $tag;
     }

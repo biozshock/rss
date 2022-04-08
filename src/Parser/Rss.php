@@ -1,10 +1,4 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 1:46 PM
- */
+<?php declare(strict_types=1);
 
 namespace Biozshock\Rss\Parser;
 
@@ -13,13 +7,13 @@ use Biozshock\Rss\Model\Record;
 
 class Rss extends AbstractXmlParser
 {
-    private static $feedPropertiesMapping = array(
+    private static array $feedPropertiesMapping = array(
         'title' => 'setTitle',
         'description' => 'setDescription',
         'link' => 'setLink',
     );
 
-    private static $propertiesMapping = array(
+    private static array $propertiesMapping = array(
         'title' => 'setTitle',
         'guid'  => 'setGuid',
         'link'  => 'setLink',
@@ -27,7 +21,7 @@ class Rss extends AbstractXmlParser
         'author' => 'setAuthor'
     );
 
-    public function create(\DOMDocument $document, $link)
+    public function create(\DOMDocument $document, string $link): ?Feed
     {
         $feed = null;
         $nodes = $document->getElementsByTagName('item');
@@ -37,7 +31,7 @@ class Rss extends AbstractXmlParser
             foreach ($nodes as $node) {
                 try {
                     $feed->addRecord($this->extract($node));
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     throw new \RuntimeException($e->getMessage());
                 }
             }
@@ -46,7 +40,7 @@ class Rss extends AbstractXmlParser
         return $feed;
     }
 
-    private function extractFeed(\DOMElement $element)
+    private function extractFeed(\DOMElement $element): Feed
     {
         $feed = new Feed();
         foreach (self::$feedPropertiesMapping as $nodeName => $methodName) {
@@ -62,7 +56,7 @@ class Rss extends AbstractXmlParser
         return $feed;
     }
 
-    private function extract(\DOMElement $node)
+    private function extract(\DOMElement $node): Record
     {
         $item = new Record();
 

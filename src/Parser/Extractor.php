@@ -1,19 +1,18 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 2:13 PM
- */
+<?php declare(strict_types=1);
 
 namespace Biozshock\Rss\Parser;
 
+use Biozshock\Rss\Model\Feed;
 
 class Extractor
 {
-    private $extractors;
 
-    public function extract($text, $link)
+    /**
+     * @var array<AbstractXmlParser>
+     */
+    private array $extractors = [];
+
+    public function extract(string $text, string $link): ?Feed
     {
         $previousValue = libxml_use_internal_errors(true);
         $document = new \DomDocument();
@@ -23,14 +22,16 @@ class Extractor
 
         if ($document->getElementsByTagName('rss')->length) {
             return $this->getRssParser()->create($document, $link);
-        } elseif ($document->getElementsByTagName('feed')->length) {
+        }
+
+        if ($document->getElementsByTagName('feed')->length) {
             return $this->getAtomParser()->create($document, $link);
         }
 
-        return [];
+        return null;
     }
 
-    private function load()
+    private function load(): void
     {
         if (count($this->extractors)) {
             return;
@@ -42,7 +43,7 @@ class Extractor
     /**
      * @return Rss
      */
-    private function getRssParser()
+    private function getRssParser(): Rss
     {
         $this->load();
         return $this->extractors['rss'];
@@ -51,7 +52,7 @@ class Extractor
     /**
      * @return Atom
      */
-    private function getAtomParser()
+    private function getAtomParser(): Atom
     {
         $this->load();
         return $this->extractors['atom'];

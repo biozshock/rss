@@ -1,11 +1,3 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 1:19 PM
- */
+<?php declare(strict_types=1);
 
-namespace Biozshock\Rss\Test {
-    require __DIR__ . '/../vendor/autoload.php';
-}
+require __DIR__ . '/../vendor/autoload.php';

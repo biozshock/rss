@@ -1,27 +1,25 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: bumz
- * Date: 8/9/15
- * Time: 12:54 PM
- */
+<?php declare(strict_types=1);
 
-namespace Biozshock\Rss\Test\Adapter\Fetcher;
+namespace Biozshock\Rss\Tests\Adapter\Fetcher;
 
-use \Biozshock\Rss\Adapter\Fetcher\GuzzleAdapter;
+use Biozshock\Rss\Adapter\Fetcher\GuzzleAdapter;
+use Biozshock\Rss\Model\Feed;
+use Biozshock\Rss\Parser\Extractor;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\TestCase;
 
-class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
+class GuzzleAdapterTest extends TestCase
 {
-    public function testFetch()
+    public function testFetch(): void
     {
-        $extractorMock = $this->getMock('\Biozshock\Rss\Parser\Extractor');
-        $extractorMock->expects(static::once())
+        $extractorMock = $this->createMock(Extractor::class);
+        $result = $this->createMock(Feed::class);
+        $extractorMock->expects(self::once())
             ->method('extract')
-            ->will(static::returnValue('done'));
+            ->willReturn($result);
 
         $mock = new MockHandler([
             new Response(200, [], '<xml></xml>'),
@@ -32,6 +30,6 @@ class GuzzleAdapterTest extends \PHPUnit_Framework_TestCase
 
         $fetcher = new GuzzleAdapter($client, $extractorMock);
 
-        static::assertEquals('done', $fetcher->fetch('url'));
+        self::assertSame($result, $fetcher->fetch('url'));
     }
 }
