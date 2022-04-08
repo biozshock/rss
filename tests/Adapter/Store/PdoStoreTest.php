@@ -35,11 +35,13 @@ class PdoStoreTest extends TestCase
         $store->save($feed);
 
         $loadedFeed = $store->loadFeed(1);
-        static::assertEquals($feed->getSource(), $loadedFeed->getSource());
+        self::assertNotNull($loadedFeed);
+        self::assertEquals($feed->getSource(), $loadedFeed->getSource());
 
+        self::assertNotNull($loadedFeed->getId());
         $records = $store->loadItems($loadedFeed->getId());
-        static::assertEquals($feed->getRecords()[0]->getTitle(), $records[0]->getTitle());
-        static::assertEquals($feed->getRecords()[1]->getTitle(), $records[1]->getTitle());
+        self::assertEquals($feed->getRecords()[0]->getTitle(), $records[0]->getTitle());
+        self::assertEquals($feed->getRecords()[1]->getTitle(), $records[1]->getTitle());
 
         return $feed;
     }
@@ -61,14 +63,17 @@ class PdoStoreTest extends TestCase
         $store->save($feed);
 
         $loadedFeed = $store->loadFeed(1);
+        self::assertNotNull($loadedFeed);
+        self::assertNotNull($loadedFeed->getId());
         $records = $store->loadItems($loadedFeed->getId());
 
-        static::assertEquals($record->getTitle(), $records[2]->getTitle());
+        self::assertEquals($record->getTitle(), $records[2]->getTitle());
     }
 
     public function setUp(): void
     {
         $sql = file_get_contents(__DIR__ . '/../../Fixtures/data.sql');
+        self::assertNotFalse($sql);
         $pdo = new \PDO($this->dsn);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $pdo->exec($sql);

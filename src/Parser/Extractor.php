@@ -8,10 +8,8 @@ use Biozshock\Rss\Model\Feed;
 
 class Extractor
 {
-    /**
-     * @var array<AbstractXmlParser>
-     */
-    private array $extractors = [];
+    private ?Rss $rss = null;
+    private ?Atom $atom = null;
 
     public function extract(string $text, string $link): ?Feed
     {
@@ -21,37 +19,32 @@ class Extractor
         $document->loadXML($text);
         libxml_use_internal_errors($previousValue);
 
-        if ($document->getElementsByTagName('rss')->length) {
+        if (0 !== $document->getElementsByTagName('rss')->length) {
             return $this->getRssParser()->create($document, $link);
         }
 
-        if ($document->getElementsByTagName('feed')->length) {
+        if (0 !== $document->getElementsByTagName('feed')->length) {
             return $this->getAtomParser()->create($document, $link);
         }
 
         return null;
     }
 
-    private function load(): void
-    {
-        if (count($this->extractors)) {
-            return;
-        }
-        $this->extractors['rss'] = new Rss();
-        $this->extractors['atom'] = new Atom();
-    }
-
     private function getRssParser(): Rss
     {
-        $this->load();
+        if (null === $this->rss) {
+            $this->rss = new Rss();
+        }
 
-        return $this->extractors['rss'];
+        return $this->rss;
     }
 
     private function getAtomParser(): Atom
     {
-        $this->load();
+        if (null === $this->atom) {
+            $this->atom = new Atom();
+        }
 
-        return $this->extractors['atom'];
+        return $this->atom;
     }
 }

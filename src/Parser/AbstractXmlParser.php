@@ -15,7 +15,7 @@ abstract class AbstractXmlParser
         $results = $node->getElementsByTagName($tagName);
         for ($i = 0; $i < $results->length; ++$i) {
             $result = $results->item($i);
-            if (null === $result || !$result->nodeValue) {
+            if (null === $result || '' === $result->nodeValue) {
                 continue;
             }
 

@@ -10,11 +10,17 @@ use DateTimeInterface;
 
 class Atom extends AbstractXmlParser
 {
+    /**
+     * @var array<string, string>
+     */
     private static array $feedPropertiesMapping = [
         'title' => 'setTitle',
         'subtitle' => 'setDescription',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     private static array $propertiesMapping = [
         'title' => 'setTitle',
         'id' => 'setGuid',
@@ -22,17 +28,19 @@ class Atom extends AbstractXmlParser
 
     public function create(\DOMDocument $document, string $link): ?Feed
     {
-        $feed = null;
         $nodes = $document->getElementsByTagName('entry');
-        if ($nodes->length) {
-            $feed = $this->extractFeed($document->getElementsByTagName('feed')->item(0));
-            $feed->setSource($link);
-            foreach ($nodes as $node) {
-                try {
-                    $feed->addRecord($this->extract($node));
-                } catch (\Exception $e) {
-                    throw new \RuntimeException($e->getMessage());
-                }
+
+        if (0 === $nodes->length || null === $feedElement = $document->getElementsByTagName('feed')->item(0)) {
+            return null;
+        }
+
+        $feed = $this->extractFeed($feedElement);
+        $feed->setSource($link);
+        foreach ($nodes as $node) {
+            try {
+                $feed->addRecord($this->extract($node));
+            } catch (\Exception $e) {
+                throw new \RuntimeException($e->getMessage());
             }
         }
 
@@ -46,21 +54,21 @@ class Atom extends AbstractXmlParser
             $feed->$methodName($this->getNodeValueByTagName($element, $nodeName));
         }
 
-        if ($date = $this->getNodeValueByTagName($element, 'updated')) {
-            $feed->setPublishedDate(\DateTime::createFromFormat(\DateTime::ATOM, $date));
+        if ((null !== $date = $this->getNodeValueByTagName($element, 'updated')) && false !== $publishedDate = \DateTime::createFromFormat(\DateTime::ATOM, $date)) {
+            $feed->setPublishedDate($publishedDate);
         }
 
         $nodeList = $element->getElementsByTagName('link');
         foreach ($nodeList as $nodeResult) {
-            /** @var \DomElement $nodeResult */
+            /** @var \DOMElement $nodeResult */
             if ('alternate' === $nodeResult->getAttribute('rel')) {
                 $feed->setLink($nodeResult->getAttribute('href'));
                 break;
             }
         }
 
-        if (!$feed->getLink()) {
-            $feed->setLink($this->getNodeValueByTagName($element, 'id'));
+        if ('' !== $feed->getLink() && null !== $link = $this->getNodeValueByTagName($element, 'id')) {
+            $feed->setLink($link);
         }
 
         $feed->setLastFetched(new \DateTime());
@@ -87,17 +95,28 @@ class Atom extends AbstractXmlParser
 
     private function setContent(\DOMElement $node, Record $item): void
     {
-        $item->setContent(
-            $this->getNodeValueByTagName($node, 'content')
-                ?: $this->getNodeValueByTagName($node, 'summary')
-        );
+        $content = $this->getNodeValueByTagName($node, 'content');
+        if (null !== $content && '' !== $content) {
+            $item->setContent($content);
+
+            return;
+        }
+
+        $content = $this->getNodeValueByTagName($node, 'summary');
+        if (null !== $content && '' !== $content) {
+            $item->setContent($content);
+
+            return;
+        }
+
+        $item->setContent('');
     }
 
     private function setLink(\DOMElement $node, Record $item): void
     {
         $nodeList = $node->getElementsByTagName('link');
         foreach ($nodeList as $nodeResult) {
-            /** @var \DomElement $nodeResult */
+            /** @var \DOMElement $nodeResult */
             if ('alternate' === $nodeResult->getAttribute('rel')) {
                 $item->setLink($nodeResult->getAttribute('href'));
                 break;
@@ -107,9 +126,15 @@ class Atom extends AbstractXmlParser
 
     private function setAuthor(\DOMElement $node, Record $item): void
     {
-        $nodeList = $node->getElementsByTagName('author');
-        foreach ($nodeList->item(0)->childNodes as $nodeResult) {
-            if ('name' === $nodeResult->nodeName) {
+        $nodeList = $node->getElementsByTagName('author')->item(0);
+
+        if (null === $nodeList) {
+            return;
+        }
+
+        foreach ($nodeList->childNodes as $nodeResult) {
+            /** @var \DOMNode $nodeResult */
+            if ('name' === $nodeResult->nodeName && null !== $nodeResult->nodeValue) {
                 $item->setAuthor($nodeResult->nodeValue);
                 break;
             }
@@ -119,8 +144,8 @@ class Atom extends AbstractXmlParser
     private function setDate(\DOMElement $node, Record $item): void
     {
         $date = $this->getNodeValueByTagName($node, 'published') ?? $this->getNodeValueByTagName($node, 'updated');
-        if ($date && strtotime($date)) {
-            $item->setPublicationDate(\DateTime::createFromFormat(DateTimeInterface::ATOM, $date));
+        if (null !== $date && false !== $publicationDate = \DateTime::createFromFormat(DateTimeInterface::ATOM, $date)) {
+            $item->setPublicationDate($publicationDate);
         }
     }
 
@@ -128,9 +153,9 @@ class Atom extends AbstractXmlParser
     {
         $tags = $node->getElementsByTagName('category');
         foreach ($tags as $tag) {
-            /** @var \DomElement $tag */
-            if ($tag->getAttribute('term')) {
-                $item->addTag($tag->getAttribute('label') ?: $tag->getAttribute('term'));
+            /** @var \DOMElement $tag */
+            if ('' !== $tag->getAttribute('term')) {
+                $item->addTag('' !== $tag->getAttribute('label') ? $tag->getAttribute('label') : $tag->getAttribute('term'));
             }
         }
     }

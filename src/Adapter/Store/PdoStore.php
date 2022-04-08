@@ -13,7 +13,8 @@ class PdoStore implements StoreInterface
     private string $dsn;
     private string $username;
     private string $password;
-    private ?PDO $pdo = null;
+    private PDO $pdo;
+    private bool $initialized = false;
 
     public function __construct(string $dsn, string $username, string $password)
     {
@@ -29,7 +30,16 @@ class PdoStore implements StoreInterface
     {
         $this->init();
         $statement = $this->pdo->query('Select * from Feed');
+
+        if (false === $statement) {
+            throw new \LogicException('Seems like SQL is invalid');
+        }
+
         $cursor = $statement->fetchAll();
+
+        if (false === $cursor || 0 === count($cursor)) {
+            return [];
+        }
 
         $result = [];
 
@@ -47,7 +57,7 @@ class PdoStore implements StoreInterface
         $statement->execute([$id]);
         $cursor = $statement->fetchAll();
 
-        if (!$cursor) {
+        if (false === $cursor || 0 === count($cursor)) {
             return null;
         }
 
@@ -61,7 +71,7 @@ class PdoStore implements StoreInterface
         $statement->execute([$url]);
         $cursor = $statement->fetchAll();
 
-        if (!$cursor) {
+        if (false === $cursor || 0 === count($cursor)) {
             return null;
         }
 
@@ -77,6 +87,10 @@ class PdoStore implements StoreInterface
         $statement = $this->pdo->prepare('Select * from Record where feed_id = ?');
         $statement->execute([$feedId]);
         $cursor = $statement->fetchAll();
+
+        if (false === $cursor || 0 === count($cursor)) {
+            return [];
+        }
 
         $result = [];
 
@@ -94,7 +108,7 @@ class PdoStore implements StoreInterface
         $statement->execute([$id]);
         $cursor = $statement->fetchAll();
 
-        if (!$cursor) {
+        if (false === $cursor || 0 === count($cursor)) {
             return null;
         }
 
@@ -108,7 +122,7 @@ class PdoStore implements StoreInterface
         $statement->execute([$feedId]);
         $cursor = $statement->fetchAll();
 
-        if (!$cursor) {
+        if (false === $cursor || 0 === count($cursor)) {
             return null;
         }
 
@@ -120,8 +134,8 @@ class PdoStore implements StoreInterface
         $this->init();
         $updateFeed = true;
         // if there are no such feed yet.
-        if (!$feed->getId()) {
-            if (!($loadedFeed = $this->loadFeedByUrl($feed->getSource()))) {
+        if (null === $feed->getId()) {
+            if (null === $loadedFeed = $this->loadFeedByUrl($feed->getSource())) {
                 $updateFeed = false;
                 // sure if there are only mysql it's much more efficient to make through sql variables :)
                 $statement = $this->pdo->prepare('insert into Feed (`id`, `source`, `link`, `description`, `title`, ' .
@@ -147,6 +161,12 @@ class PdoStore implements StoreInterface
             }
         }
 
+        $feedId = $feed->getId();
+
+        if (null === $feedId) {
+            throw new \RuntimeException('Feed id is null.');
+        }
+
         $this->pdo->beginTransaction();
 
         try {
@@ -161,20 +181,19 @@ class PdoStore implements StoreInterface
                     $this->formatDateTime($feed->getPublishedDate()),
                     $this->formatDateTime($feed->getLastFetched()),
                     $this->formatDateTime($feed->getLastModified()),
-                    $feed->getId(),
+                    $feedId,
                 ]);
             }
 
             // TODO: collision with same pubdates
-            $lastRecord = $this->loadLastItem($feed->getId());
+            $lastRecord = $this->loadLastItem($feedId);
             $statement = $this->pdo->prepare('insert into Record (`id`, `feed_id`, `title`, `content`, `picture`, ' .
                         '`author`, `link`, `guid`, `publication_date`, `tags`) values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 
             foreach ($feed->getRecords() as $record) {
-                /** @var Record $record */
-                if (!$lastRecord || $record->getPublicationDate() > $lastRecord->getPublicationDate()) {
+                if (null === $lastRecord || $record->getPublicationDate() > $lastRecord->getPublicationDate()) {
                     $statement->execute([
-                        $feed->getId(),
+                        $feedId,
                         $record->getTitle(),
                         $record->getContent(),
                         $record->getPicture(),
@@ -195,16 +214,17 @@ class PdoStore implements StoreInterface
 
     protected function init(): PDO
     {
-        if (null === $this->pdo) {
+        if (false === $this->initialized) {
             $this->pdo = new \PDO($this->dsn, $this->username, $this->password);
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $this->initialized = true;
         }
 
         return $this->pdo;
     }
 
     /**
-     * @param array<mixed> $row
+     * @param array<string> $row
      */
     private function hydrateFeed(array $row): Feed
     {
@@ -223,7 +243,7 @@ class PdoStore implements StoreInterface
     }
 
     /**
-     * @param array<mixed> $row
+     * @param array<string> $row
      */
     private function hydrateRecord(array $row): Record
     {
@@ -236,13 +256,17 @@ class PdoStore implements StoreInterface
         $feed->setLink($row['link']);
         $feed->setGuid($row['guid']);
         $feed->setPublicationDate(new \DateTime($row['publication_date']));
-        $feed->setTags(json_decode($row['tags'], true, 512, JSON_THROW_ON_ERROR));
+        $tags = json_decode($row['tags'], true, 512, JSON_THROW_ON_ERROR);
+
+        if (is_array($tags)) {
+            $feed->setTags(array_filter($tags, 'strval'));
+        }
 
         return $feed;
     }
 
     private function formatDateTime(\DateTime $time = null): ?string
     {
-        return $time ? $time->setTimeZone(new \DateTimeZone(date_default_timezone_get()))->format('Y-m-d H:i:s') : null;
+        return null !== $time ? $time->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('Y-m-d H:i:s') : null;
     }
 }

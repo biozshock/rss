@@ -21,7 +21,11 @@ jobs:
           php-version: ${{ matrix.php-version }}
       - name: Install composer requirements.
         run: composer install
+      - name: PHP Lint
+        run: ./vendor/bin/parallel-lint -e php --exclude vendor --blame src tests
       - name: Check PHP CS
         run: ./vendor/bin/php-cs-fixer fix --config .php-cs-fixer.php --dry-run --using-cache no --show-progress dots -v
+      - name: Check PHPStan
+        run: ./vendor/bin/phpstan
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit

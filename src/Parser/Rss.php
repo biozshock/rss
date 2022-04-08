@@ -9,12 +9,18 @@ use Biozshock\Rss\Model\Record;
 
 class Rss extends AbstractXmlParser
 {
+    /**
+     * @var array<string, string>
+     */
     private static array $feedPropertiesMapping = [
         'title' => 'setTitle',
         'description' => 'setDescription',
         'link' => 'setLink',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     private static array $propertiesMapping = [
         'title' => 'setTitle',
         'guid' => 'setGuid',
@@ -25,17 +31,19 @@ class Rss extends AbstractXmlParser
 
     public function create(\DOMDocument $document, string $link): ?Feed
     {
-        $feed = null;
         $nodes = $document->getElementsByTagName('item');
-        if ($nodes->length) {
-            $feed = $this->extractFeed($document->getElementsByTagName('channel')->item(0));
-            $feed->setSource($link);
-            foreach ($nodes as $node) {
-                try {
-                    $feed->addRecord($this->extract($node));
-                } catch (\Throwable $e) {
-                    throw new \RuntimeException($e->getMessage());
-                }
+
+        if (0 === $nodes->length || null === $feedNode = $document->getElementsByTagName('channel')->item(0)) {
+            return null;
+        }
+
+        $feed = $this->extractFeed($feedNode);
+        $feed->setSource($link);
+        foreach ($nodes as $node) {
+            try {
+                $feed->addRecord($this->extract($node));
+            } catch (\Throwable $e) {
+                throw new \RuntimeException($e->getMessage());
             }
         }
 
@@ -49,8 +57,8 @@ class Rss extends AbstractXmlParser
             $feed->$methodName($this->getNodeValueByTagName($element, $nodeName));
         }
 
-        if ($date = $this->getNodeValueByTagName($element, 'pubDate')) {
-            $feed->setPublishedDate(\DateTime::createFromFormat(\DateTime::RSS, $date));
+        if ((null !== $date = $this->getNodeValueByTagName($element, 'pubDate')) && false !== $publishedDate = \DateTime::createFromFormat(\DateTime::RSS, $date)) {
+            $feed->setPublishedDate($publishedDate);
         }
 
         $feed->setLastFetched(new \DateTime());
@@ -66,17 +74,19 @@ class Rss extends AbstractXmlParser
             $item->$methodName($this->getNodeValueByTagName($node, $nodeName));
         }
 
-        if ($date = $this->getNodeValueByTagName($node, 'pubDate')) {
-            $item->setPublicationDate(\DateTime::createFromFormat(\DateTime::RSS, $date));
+        if ((null !== $date = $this->getNodeValueByTagName($node, 'pubDate')) && false !== $publicationDate = \DateTime::createFromFormat(\DateTime::RSS, $date)) {
+            $item->setPublicationDate($publicationDate);
         }
 
         $tags = $node->getElementsByTagName('category');
-        if ($tags->length) {
-            foreach ($tags as $tag) {
-                /** @var \DomElement $tag */
-                if ($tag->nodeValue) {
-                    $item->addTag($tag->nodeValue);
-                }
+        if (0 === $tags->length) {
+            return $item;
+        }
+
+        foreach ($tags as $tag) {
+            /** @var \DOMElement $tag */
+            if (null !== $tag->nodeValue && '' !== $tag->nodeValue) {
+                $item->addTag($tag->nodeValue);
             }
         }
 

@@ -1,0 +1,29 @@
+includes:
+	- vendor/phpstan/phpstan-deprecation-rules/rules.neon
+	- vendor/phpstan/phpstan-strict-rules/rules.neon
+	- vendor/phpstan/phpstan-phpunit/extension.neon
+	- vendor/phpstan/phpstan-phpunit/rules.neon
+
+parameters:
+    level: max
+    treatPhpDocTypesAsCertain: false
+    paths:
+        - src
+        - tests
+        - .php-cs-fixer.php
+    ignoreErrors:
+        - message: '#^Cannot call method getRecords\(\) on Biozshock\\Rss\\Model\\Feed\|null.$#'
+          path: tests/Parser/ExtractorTest.php
+          count: 7
+        - message: '#^Variable method call on Biozshock\\Rss\\Model\\Feed.$#'
+          path: src/Parser/Rss.php
+          count: 1
+        - message: '#^Variable method call on Biozshock\\Rss\\Model\\Record.$#'
+          path: src/Parser/Rss.php
+          count: 1
+        - message: '#^Variable method call on Biozshock\\Rss\\Model\\Feed.$#'
+          path: src/Parser/Atom.php
+          count: 1
+        - message: '#^Variable method call on Biozshock\\Rss\\Model\\Record.$#'
+          path: src/Parser/Atom.php
+          count: 1
